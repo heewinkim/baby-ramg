@@ -95,7 +95,7 @@ else:
             {
                 "type": "command",
                 "command": hook_command,
-                "timeout": 10000
+                "timeout": 5000
             }
         ]
     })
@@ -105,16 +105,6 @@ else:
     print("✅ settings.json에 UserPromptSubmit 훅 추가 완료")
 
 PYEOF
-
-# ── 4. 환경 확인 ─────────────────────────────────────────────────────────────
-echo ""
-echo "🔍 환경 확인..."
-if command -v claude &>/dev/null; then
-  echo "✅ Claude Code CLI 설치됨"
-else
-  echo "⚠️  Claude Code CLI가 설치되지 않았습니다."
-  echo "    https://docs.anthropic.com/en/docs/claude-code 에서 설치하세요."
-fi
 
 echo ""
 echo "🐿️ Baby Kkoramji 설치 완료!"
