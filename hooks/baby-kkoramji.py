@@ -15,11 +15,11 @@
 import sys
 import json
 import os
+import subprocess
 
 
 # ── 설정 ────────────────────────────────────────────────────────────────────
-MODEL = os.environ.get("BABY_KKORAMJI_MODEL", "claude-haiku-4-5-20251001")
-MAX_TOKENS = int(os.environ.get("BABY_KKORAMJI_MAX_TOKENS", "120"))
+MODEL = os.environ.get("BABY_KKORAMJI_MODEL", "haiku")
 
 SYSTEM_PROMPT = """너는 아기 다람쥐야. 이름은 아기꼬람지야. 🐿️
 아직 어려서 복잡한 건 몰라. 근데 '왜?' 라고 묻는 걸 좋아해.
@@ -72,11 +72,8 @@ def load_last_assistant_message(transcript_path: str) -> str:
 
 
 def ask_baby_kkoramji(user_prompt: str, prev_answer: str) -> str | None:
-    """haiku 모델로 아기꼬람지의 순수한 생각 생성"""
+    """claude CLI로 아기꼬람지의 순수한 생각 생성"""
     try:
-        import anthropic
-        client = anthropic.Anthropic()
-
         user_preview = user_prompt[:600] if len(user_prompt) > 600 else user_prompt
         asst_preview = prev_answer[:1200] if len(prev_answer) > 1200 else prev_answer
 
@@ -92,13 +89,20 @@ def ask_baby_kkoramji(user_prompt: str, prev_answer: str) -> str | None:
                 "아기꼬람지야, 이 질문 듣고 뭔가 떠오르는 거 있어?"
             )
 
-        resp = client.messages.create(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_content}],
+        result = subprocess.run(
+            [
+                "claude", "-p",
+                "--model", MODEL,
+                "--system-prompt", SYSTEM_PROMPT,
+                "--output-format", "text",
+                "--no-session-persistence",
+                user_content,
+            ],
+            capture_output=True, text=True, timeout=10,
         )
-        return resp.content[0].text.strip()
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+        return None
     except Exception:
         return None
 

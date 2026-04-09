@@ -3,7 +3,7 @@
 > A pure-minded squirrel agent that asks the questions you forgot to ask.
 
 아기꼬람지는 Claude Code의 **UserPromptSubmit 훅**으로 동작하는 소형 에이전트야.  
-네가 질문하기 직전, 빠른 모델(Haiku)이 순수하고 단순한 시각으로 핵심 질문 하나를 던져줘.  
+네가 질문하기 직전, Claude Code CLI를 통해 빠른 모델(Haiku)이 순수하고 단순한 시각으로 핵심 질문 하나를 던져줘.  
 Claude(꼬람지)는 그 시각을 받아 답변 끝에 짧게 반응해 — 놓친 원인이나 새로운 인사이트를 담아서.
 
 ---
@@ -63,8 +63,6 @@ Claude 답변 + 끝에 아기꼬람지 반응 (--- 구분선)
 ### 요구사항
 - Claude Code (2.x 이상)
 - Python 3.x
-- `anthropic` 패키지: `pip install anthropic`
-- `ANTHROPIC_API_KEY` 환경변수
 
 ### 설치 방법
 
@@ -75,19 +73,41 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-설치하면:
-- `~/.claude/hooks/baby-kkoramji.py` 복사
-- `~/.claude/rules/baby-kkoramji.md` 복사 (Claude에게 반응 방식 안내)
-- `~/.claude/settings.json`에 `UserPromptSubmit` 훅 등록 (기존 설정 유지)
+설치 시 **전역/로컬** 중 선택:
+
+| 모드 | 대상 경로 | 적용 범위 |
+|------|----------|----------|
+| 전역 (`1`) | `~/.claude/` | 모든 프로젝트 |
+| 로컬 (`2`) | `../.claude/` (상위 프로젝트) | 해당 프로젝트만 |
+
+**로컬 설치**는 프로젝트 안에서 이 레포를 clone한 뒤 실행하면 상위 프로젝트 디렉토리의 `.claude/`에 설치돼:
+
+```
+my-project/          ← 여기에 설치됨 (.claude/)
+├── .claude/
+│   ├── hooks/baby-kkoramji.py
+│   ├── rules/baby-kkoramji.md
+│   └── settings.json
+├── baby-ramg/       ← 여기서 setup.sh 실행
+│   └── ...
+└── src/
+```
 
 ### 제거
 
+**전역 설치 제거:**
 ```bash
 rm ~/.claude/hooks/baby-kkoramji.py
 rm ~/.claude/rules/baby-kkoramji.md
 ```
 
-`~/.claude/settings.json`에서 `UserPromptSubmit` 항목 중 `baby-kkoramji.py` 관련 항목을 수동으로 제거.
+**로컬 설치 제거:**
+```bash
+rm <프로젝트>/.claude/hooks/baby-kkoramji.py
+rm <프로젝트>/.claude/rules/baby-kkoramji.md
+```
+
+이후 해당 `settings.json`에서 `UserPromptSubmit` 항목 중 `baby-kkoramji.py` 관련 항목을 수동으로 제거.
 
 ---
 
@@ -97,8 +117,7 @@ rm ~/.claude/rules/baby-kkoramji.md
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
-| `BABY_KKORAMJI_MODEL` | `claude-haiku-4-5-20251001` | 사용할 모델 |
-| `BABY_KKORAMJI_MAX_TOKENS` | `120` | 최대 토큰 수 |
+| `BABY_KKORAMJI_MODEL` | `haiku` | 사용할 모델 (haiku, sonnet, opus 등) |
 
 ---
 

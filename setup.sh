@@ -5,17 +5,46 @@
 
 set -e
 
-HOOK_SRC="$(cd "$(dirname "$0")" && pwd)/hooks/baby-kkoramji.py"
-HOOK_DEST="$HOME/.claude/hooks/baby-kkoramji.py"
-SETTINGS="$HOME/.claude/settings.json"
-RULES_DIR="$HOME/.claude/rules"
-RULE_DEST="$RULES_DIR/baby-kkoramji.md"
-RULE_SRC="$(cd "$(dirname "$0")" && pwd)/claude-rule.md"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HOOK_SRC="$SCRIPT_DIR/hooks/baby-kkoramji.py"
+RULE_SRC="$SCRIPT_DIR/claude-rule.md"
 
 echo "🐿️ Baby Kkoramji 설치 시작..."
+echo ""
+
+# ── 설치 모드 선택 ──────────────────────────────────────────────────────────
+echo "설치 방식을 선택해주세요:"
+echo "  1) 전역 설치 (~/.claude/) — 모든 프로젝트에서 동작"
+echo "  2) 로컬 설치 (상위 프로젝트의 .claude/) — 현재 프로젝트에서만 동작"
+echo ""
+read -rp "선택 (1/2): " INSTALL_MODE
+
+case "$INSTALL_MODE" in
+  1)
+    INSTALL_BASE="$HOME"
+    HOOK_CMD="$HOME/.claude/hooks/baby-kkoramji.py"
+    echo "→ 전역 설치 모드"
+    ;;
+  2)
+    INSTALL_BASE="$(dirname "$SCRIPT_DIR")"
+    HOOK_CMD=".claude/hooks/baby-kkoramji.py"
+    echo "→ 로컬 설치 모드 (대상: $INSTALL_BASE)"
+    ;;
+  *)
+    echo "❌ 잘못된 선택입니다. 1 또는 2를 입력해주세요."
+    exit 1
+    ;;
+esac
+
+HOOK_DEST="$INSTALL_BASE/.claude/hooks/baby-kkoramji.py"
+RULES_DIR="$INSTALL_BASE/.claude/rules"
+RULE_DEST="$RULES_DIR/baby-kkoramji.md"
+SETTINGS="$INSTALL_BASE/.claude/settings.json"
+
+echo ""
 
 # ── 1. 훅 스크립트 복사 ──────────────────────────────────────────────────────
-mkdir -p "$HOME/.claude/hooks"
+mkdir -p "$INSTALL_BASE/.claude/hooks"
 cp "$HOOK_SRC" "$HOOK_DEST"
 chmod +x "$HOOK_DEST"
 echo "✅ 훅 스크립트 복사: $HOOK_DEST"
@@ -26,13 +55,13 @@ cp "$RULE_SRC" "$RULE_DEST"
 echo "✅ Claude 규칙 추가: $RULE_DEST"
 
 # ── 3. settings.json에 UserPromptSubmit 훅 추가 ──────────────────────────────
-python3 - <<'PYEOF'
+python3 - "$SETTINGS" "$HOOK_CMD" <<'PYEOF'
 import json
 import os
 import sys
 
-settings_path = os.path.expanduser("~/.claude/settings.json")
-hook_command = "~/.claude/hooks/baby-kkoramji.py"
+settings_path = sys.argv[1]
+hook_command = sys.argv[2]
 
 # settings.json 읽기 (없으면 빈 오브젝트)
 settings = {}
@@ -80,17 +109,18 @@ PYEOF
 # ── 4. 환경 확인 ─────────────────────────────────────────────────────────────
 echo ""
 echo "🔍 환경 확인..."
-python3 -c "import anthropic; print(f'✅ anthropic 패키지: {anthropic.__version__}')" 2>/dev/null \
-  || echo "⚠️  anthropic 패키지 없음 → pip install anthropic"
-
-if [ -z "$ANTHROPIC_API_KEY" ]; then
-  echo "⚠️  ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다."
-  echo "    ~/.zshrc 또는 ~/.bashrc에 추가하세요:"
-  echo "    export ANTHROPIC_API_KEY=your_api_key"
+if command -v claude &>/dev/null; then
+  echo "✅ Claude Code CLI 설치됨"
 else
-  echo "✅ ANTHROPIC_API_KEY 설정됨"
+  echo "⚠️  Claude Code CLI가 설치되지 않았습니다."
+  echo "    https://docs.anthropic.com/en/docs/claude-code 에서 설치하세요."
 fi
 
 echo ""
 echo "🐿️ Baby Kkoramji 설치 완료!"
-echo "   다음 Claude Code 세션부터 아기꼬람지가 활성화됩니다."
+if [ "$INSTALL_MODE" = "1" ]; then
+  echo "   모든 Claude Code 세션에서 아기꼬람지가 활성화됩니다."
+else
+  echo "   이 프로젝트의 Claude Code 세션에서 아기꼬람지가 활성화됩니다."
+  echo "   대상 프로젝트: $INSTALL_BASE"
+fi
