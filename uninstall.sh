@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 🐿️ Baby Kkoramji Uninstaller
-# 현재 버전의 훅, 규칙, settings 항목을 제거한다.
+# 모든 버전(v1 API 방식 / v2 서브에이전트 방식)의 훅, 규칙, settings 항목을 제거한다.
+# 전역(~/.claude/)과 로컬(상위 프로젝트 .claude/) 모두 처리.
 
 set -e
 
@@ -8,10 +9,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_BASE="$(dirname "$SCRIPT_DIR")"
 
 echo "🐿️ Baby Kkoramji 제거 시작..."
+echo "   (예전 버전 + 현재 버전 모두 정리)"
 echo ""
 
 REMOVED=0
 
+# ── 파일 제거 함수 ────────────────────────────────────────────────────────────
 remove_if_exists() {
   local file="$1"
   if [ -f "$file" ]; then
@@ -21,6 +24,7 @@ remove_if_exists() {
   fi
 }
 
+# ── settings.json에서 baby-kkoramji 훅 항목 제거 ──────────────────────────────
 remove_hook_from_settings() {
   local settings="$1"
   if [ ! -f "$settings" ]; then
@@ -57,20 +61,21 @@ else:
 PYEOF
 }
 
-# ── 전역 제거 ─────────────────────────────────────────────────────────────────
+# ── 전역 제거 (~/.claude/) ────────────────────────────────────────────────────
 echo "📍 전역 (~/.claude/) 확인..."
 remove_if_exists "$HOME/.claude/hooks/baby-kkoramji.py"
 remove_if_exists "$HOME/.claude/rules/baby-kkoramji.md"
 remove_hook_from_settings "$HOME/.claude/settings.json"
 echo ""
 
-# ── 로컬 제거 ─────────────────────────────────────────────────────────────────
+# ── 로컬 제거 (상위 프로젝트 .claude/) ────────────────────────────────────────
 echo "📍 로컬 ($PROJECT_BASE/.claude/) 확인..."
 remove_if_exists "$PROJECT_BASE/.claude/hooks/baby-kkoramji.py"
 remove_if_exists "$PROJECT_BASE/.claude/rules/baby-kkoramji.md"
 remove_hook_from_settings "$PROJECT_BASE/.claude/settings.json"
 echo ""
 
+# ── 결과 ──────────────────────────────────────────────────────────────────────
 if [ "$REMOVED" -gt 0 ]; then
   echo "✅ Baby Kkoramji 제거 완료! (파일 ${REMOVED}개 삭제)"
 else

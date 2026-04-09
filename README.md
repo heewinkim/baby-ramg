@@ -97,7 +97,7 @@ cd baby-ramg
 ./uninstall.sh
 ```
 
-전역/로컬 모두 자동으로 정리됨.
+전역/로컬 모두 자동으로 정리됨. 예전 버전(v1 API 방식)도 함께 제거.
 
 ---
 
@@ -109,8 +109,7 @@ baby-ramg/
 │   └── baby-kkoramji.py   # UserPromptSubmit 훅 (프롬프트 주입만)
 ├── claude-rule.md          # Claude 서브에이전트 실행 규칙
 ├── setup.sh                # 설치 스크립트
-├── uninstall.sh            # 제거 스크립트
-├── legacy_uninstall.sh     # v1 (API 키 방식) 제거용
+├── uninstall.sh            # 제거 스크립트 (전 버전 호환)
 └── README.md
 ```
 
